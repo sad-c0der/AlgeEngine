@@ -1,0 +1,6 @@
+Package: egl-registry
+Version: 2024-01-25
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 13b1e17349b4b08b257a41f7e586a8520c5c56e3c8759e02209f8a26195f6581
+Description: EGL API and Extension Registry
