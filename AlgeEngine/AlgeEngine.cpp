@@ -1,30 +1,20 @@
 ﻿// AlgeEngine.cpp : Defines the entry point for the application.
 //
 #include "AlgeEngine.h"
+#include "material.h"
+#include "linear_algebra.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+
+unsigned int make_module(const std::string& filepath, unsigned int module_type);
+unsigned int make_shader(const std::string& vertex_filepath, const std::string& fragment_filepath);
 
 // Settings
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-
-const char* vertexShaderSource = "#version 330 core\n"
-	"layout (location = 0) in vec3 aPos;\n"
-	"void main()\n"
-	"{\n"
-	"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-	"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-	"out vec4 FragColor;\n"
-	"void main()\n"
-	"{\n"
-	"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-	"}\n\0";
-
-int main()
+int main(int argc, char* argv[])
 {
 	/* GLFW Initialize and Configure */
 	glfwInit();
@@ -52,113 +42,140 @@ int main()
 		return -1;
 	}
 
-	/* Build and compile our shader program */
-	/* Vertex Shader */
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
+	/* Load our Shaders */
 
-	int success;
-	char infoLog[512];
+	Shader shader("shaders/test.vert", "shaders/test.frag");
 
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	TriangleMesh* triangle = new TriangleMesh();
 
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	// Material
+	Material* material = new Material("textures/container.jpg", "textures/awesomeface.png");
+
+
+	vec3 quad_position = { 0.3f, -0.4f, 0.0f };
+
+	unsigned int model_loc = glGetUniformLocation(shader.ID, "model");
+	unsigned int view_loc = glGetUniformLocation(shader.ID, "view");
+
+	if (model_loc == -1 || view_loc == -1) {
+		std::cerr << "ERROR: Uniform 'model' or 'view' not found in shader!" << std::endl;
 	}
 
-	/* Build and Compile our shader program */
-	/* Fragment Shader */
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+	vec3 camera_pos = { -0.4f, 0.0f, 0.2f };
+	vec3 camera_target = { 0.0f, 0.0f, 0.0f };
+	mat4 view = create_look_at(camera_pos, camera_target);
 
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED" << infoLog << std::endl;
-	}
-
-	/* Link our shaders */
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	/* Check if we Linked our Shaders Correctly */
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED" << infoLog << std::endl;
-	}
-	// Delete our shaders, no longer need them
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	shader.use();
+	shader.setMat4("view", view);
 
 
-	/* Setup Vertex Data (and buffer(s)) and configure vertex attributes. */
-	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // left  
-		 0.5f, -0.5f, 0.0f, // right 
-		 0.0f,  0.5f, 0.0f  // top   r
-	};
-
-
-	// VBO here stands for Vertex Buffer Object
-	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	glBindVertexArray(0);
-
-	/* Render Loop */
 	while (!glfwWindowShouldClose(window)) {
-		/* Input */
-		processInput(window);
 
-		/* Rendering commands here */
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// input
+		processInput(window);
 
-		/* Swap Buffers and Pool IO Events i.e (Keys Pressed/Released, Mouse Movement etc) */
+		// render
+		shader.use();
+		shader.setInt("texture2", 1); // or with shader class
+		material->use();
+		triangle->draw();
+
+		mat4 model = create_model_transform(quad_position, (10 * glfwGetTime()));
+		glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.entries);
+
+		// swap buffers and poll IO events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	/* GLFW Terminate all previous GLFW allocated resources */
+	// Delete all the objects
+	glDeleteProgram(shader.ID);
+	delete triangle;
 	glfwTerminate();
-
 	return 0;
+}
+
+unsigned int make_shader(const std::string& vertex_filepath, const std::string& fragment_filepath) {
+	char infoLog[512];
+	int success;
+	std::vector<unsigned int> modules;
+	modules.reserve(2);
+
+	// Compile shaders
+	unsigned int vertexShader = make_module(vertex_filepath, GL_VERTEX_SHADER);
+	unsigned int fragmentShader = make_module(fragment_filepath, GL_FRAGMENT_SHADER);
+
+	if (vertexShader == 0 || fragmentShader == 0) {
+		std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n";
+		return 0;
+	}
+
+	modules.push_back(vertexShader);
+	modules.push_back(fragmentShader);
+
+	// Create shader program
+	unsigned int shaderProgram = glCreateProgram();
+	for (unsigned int shaderModule : modules) {
+		glAttachShader(shaderProgram, shaderModule);
+	}
+	glLinkProgram(shaderProgram);
+
+	// Check linking errors
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shaderProgram, sizeof(infoLog), NULL, infoLog);
+		std::cerr << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
+		glDeleteProgram(shaderProgram);
+		return 0; 
+	}
+
+	// Clean up shaders after linking
+	for (unsigned int shaderModule : modules) {
+		glDeleteShader(shaderModule);
+	}
+
+	return shaderProgram;
+}
+
+unsigned int make_module(const std::string& filepath, unsigned int module_type) {
+	std::ifstream file(filepath);
+
+	if (!file) {
+		std::cerr << "ERROR::SHADER::FILE_NOT_FOUND: " << filepath << std::endl;
+		return 0; 
+	}
+
+	std::string shaderSource((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	file.close();
+
+	// Create and compile shader
+	unsigned int shaderModule = glCreateShader(module_type);
+	const char* shaderSrc = shaderSource.c_str();
+	glShaderSource(shaderModule, 1, &shaderSrc, NULL);
+	glCompileShader(shaderModule);
+
+	// Check for compilation errors
+	int success;
+	glGetShaderiv(shaderModule, GL_COMPILE_STATUS, &success);
+
+	if (!success) {
+		char infoLog[512];
+		glGetShaderInfoLog(shaderModule, sizeof(infoLog), NULL, infoLog);
+		std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return 0;
+	}
+
+	return shaderModule;
 }
 
 /* Whenever the GLFW Window is resized (by User or OS) this callback function is executed */
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	// Make sure the viewport matches the new window dimensions
 	// Note: Width and Height will be significantly larger than specified on retina displays 
+	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 }
 
