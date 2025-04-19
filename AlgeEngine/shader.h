@@ -9,7 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "linear_algebra.h"
+#include "AlgeEngine.h"
 
 class Shader
 {
@@ -72,12 +72,12 @@ public:
         glDeleteShader(fragment);
     }
 
-    void setMat4(const std::string& name, const mat4& matrix) {
+    void setMat4(const std::string& name, const glm::mat4& matrix) {
         unsigned int loc = glGetUniformLocation(ID, name.c_str());
         if (loc == -1) {
             std::cerr << "ERROR: Uniform '" << name << "' not found in shader!" << std::endl;
         }
-        glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.entries);
+        glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
     }
 
     // activate the shader

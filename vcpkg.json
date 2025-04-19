@@ -2,9 +2,10 @@
     "name": "algeengine",
     "version": "1.0.0",
     "dependencies": [
-        "glad",
-        "glfw3",
-        "opengl"
+      "glad",
+      "glm",
+      "glfw3",
+      "opengl"
     ],
     "builtin-baseline": "043abf2fa419c288d594a6b96b98a811457bd9b5"
 }

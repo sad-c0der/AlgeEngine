@@ -5,7 +5,7 @@
 add_executable(AlgeEngine 
     "AlgeEngine.cpp" 
     "AlgeEngine.h"
- "TriangleMesh.cpp" "shader.h" "config.cpp" "material.h" "material.cpp" "linear_algebra.h" "linear_algebra.cpp")
+ "TriangleMesh.cpp" "shader.h" "config.cpp" "material.h" "material.cpp"  )
 
 # Set the path for the vcpkg dependencies
 set(CMAKE_PREFIX_PATH "C:/Users/Algebra/source/repos/AlgeEngine/vcpkg_installed/x64-windows/share" ${CMAKE_PREFIX_PATH})
@@ -18,6 +18,9 @@ endif()
 # TODO: Add tests and install targets if needed.
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(AlgeEngine PRIVATE glad::glad)
+
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(AlgeEngine PRIVATE glm::glm)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(AlgeEngine PRIVATE glfw)

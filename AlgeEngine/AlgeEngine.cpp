@@ -2,7 +2,6 @@
 //
 #include "AlgeEngine.h"
 #include "material.h"
-#include "linear_algebra.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -52,21 +51,26 @@ int main(int argc, char* argv[])
 	Material* material = new Material("textures/container.jpg", "textures/awesomeface.png");
 
 
-	vec3 quad_position = { 0.3f, -0.4f, 0.0f };
+	glm::vec3 quad_position = { 0.3f, -0.4f, 0.0f };
 
 	unsigned int model_loc = glGetUniformLocation(shader.ID, "model");
 	unsigned int view_loc = glGetUniformLocation(shader.ID, "view");
+	unsigned int projection_loc = glGetUniformLocation(shader.ID, "projection");
 
 	if (model_loc == -1 || view_loc == -1) {
 		std::cerr << "ERROR: Uniform 'model' or 'view' not found in shader!" << std::endl;
 	}
 
-	vec3 camera_pos = { -0.4f, 0.0f, 0.2f };
-	vec3 camera_target = { 0.0f, 0.0f, 0.0f };
-	mat4 view = create_look_at(camera_pos, camera_target);
+	glm::vec3 camera_pos = { -0.5f, 0.0f, 3.0f };
+	glm::vec3 camera_target = { 0.0f, 0.0f, 0.0f };
+	glm::vec3 camera_up = { 0.0f, 1.0f, 0.0f };
+	glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_up);
+	glm::mat4 projection = glm::perspective(45.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 10.0f);
+
 
 	shader.use();
 	shader.setMat4("view", view);
+	shader.setMat4("projection", projection);
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -83,8 +87,11 @@ int main(int argc, char* argv[])
 		material->use();
 		triangle->draw();
 
-		mat4 model = create_model_transform(quad_position, (10 * glfwGetTime()));
-		glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.entries);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, quad_position);
+		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 1.0f));
+		shader.setMat4("model", model);
 
 		// swap buffers and poll IO events
 		glfwSwapBuffers(window);
