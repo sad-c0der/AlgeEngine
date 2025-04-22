@@ -1,52 +1,59 @@
-﻿# CMakeLists.txt : CMake project for AlgeEngine, include source and define
-# project specific logic here.
+﻿# CMakeLists.txt : CMake project for AlgeEngine
 
-# Add source to this project's executable.
+cmake_minimum_required(VERSION 3.12)
+project(AlgeEngine)
+
+# Add source files
 add_executable(AlgeEngine 
-    "AlgeEngine.cpp" 
-    "AlgeEngine.h"
- "TriangleMesh.cpp" "shader.h" "config.cpp" "material.h" "material.cpp"  )
+    AlgeEngine.cpp 
+    config.cpp config.h
+    controller/app.cpp controller/app.h
+    components/camera_component.h
+    components/physics_component.h
+    components/render_component.h
+    components/transform_component.h
+    systems/camera_system.cpp systems/camera_system.h
+    systems/motion_system.cpp systems/motion_system.h
+    systems/render_system.cpp systems/render_system.h
+    view/shader.cpp view/shader.h
+    factories/factory.cpp factories/factory.h
+)
 
-# Set the path for the vcpkg dependencies
+# Set vcpkg path
 set(CMAKE_PREFIX_PATH "C:/Users/Algebra/source/repos/AlgeEngine/vcpkg_installed/x64-windows/share" ${CMAKE_PREFIX_PATH})
 
-# Set the C++ standard to C++20 if the version is greater than 3.12
+# Use C++20
 if (CMAKE_VERSION VERSION_GREATER 3.12)
     set_property(TARGET AlgeEngine PROPERTY CXX_STANDARD 20)
 endif()
 
-# TODO: Add tests and install targets if needed.
+# Dependencies
 find_package(glad CONFIG REQUIRED)
-target_link_libraries(AlgeEngine PRIVATE glad::glad)
-
 find_package(glm CONFIG REQUIRED)
-target_link_libraries(AlgeEngine PRIVATE glm::glm)
-
 find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(AlgeEngine PRIVATE glfw)
-
 find_package(OpenGL REQUIRED)
-target_link_libraries(AlgeEngine PRIVATE OpenGL::GL)
 
-# Collect all texture files in the AlgeEngine/textures directory
-file(GLOB TEXTURE_FILES "${CMAKE_SOURCE_DIR}/AlgeEngine/textures/*")
-# Add custom command to copy the textures after the build
-add_custom_command(TARGET AlgeEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:AlgeEngine>/textures"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/AlgeEngine/textures
-        $<TARGET_FILE_DIR:AlgeEngine>/textures
-    DEPENDS ${TEXTURE_FILES}
+target_link_libraries(AlgeEngine PRIVATE 
+    glad::glad 
+    glm::glm 
+    glfw 
+    OpenGL::GL
 )
 
-# Collect all shader files in the AlgeEngine/shaders directory
-file(GLOB SHADER_FILES "${CMAKE_SOURCE_DIR}/AlgeEngine/shaders/*")
+# Function to copy assets
+function(copy_assets asset_type)
+    set(SRC_DIR "${CMAKE_SOURCE_DIR}/AlgeEngine/${asset_type}")
+    set(DST_DIR "$<TARGET_FILE_DIR:AlgeEngine>/${asset_type}")
+    file(GLOB_RECURSE ASSET_FILES "${SRC_DIR}/*")
+    
+    add_custom_command(TARGET AlgeEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${DST_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${SRC_DIR}" "${DST_DIR}"
+        DEPENDS ${ASSET_FILES}
+    )
+endfunction()
 
-# Add custom command to copy the shaders after the build
-add_custom_command(TARGET AlgeEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:AlgeEngine>/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/AlgeEngine/shaders
-        $<TARGET_FILE_DIR:AlgeEngine>/shaders
-    DEPENDS ${SHADER_FILES}
-)
+# Copy assets after build
+copy_assets(models)
+copy_assets(textures)
+copy_assets(shaders)
