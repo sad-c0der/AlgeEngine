@@ -33,6 +33,7 @@ This is a **work-in-progress** and **for educational use only**. Expect things t
 ## 🔗 Link
 
 🎥 [GetIntoGameDev on YouTube](https://www.youtube.com/playlist?list=PLn3eTxaOtL2PHxN8EHf-ktAcN-sGETKfw)
+📘 [**LearnOpenGL.com – Comprehensive OpenGL Tutorial**](https://learnopengl.com)
 
 ---
 

@@ -18,12 +18,12 @@ int main() {
 	);
 
 	factory->make_cube(
-		{ 3.0f, 0.0f, 0.25f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 10.0f });
+		{ 5.0f, 2.0f, 0.25f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 5.0f });
 
-	factory->make_girl({ 5.0f, 0.0f, 0.25f }, { 0.0f, 0.0f, 180.0f });
+	factory->make_girl({ 2.0f, 0.0f, 0.25f }, { 0.0f, 0.0f, 180.0f });
 
 	unsigned int cameraEntity = factory->make_camera(
-		{ 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f,0.0f });
+		{ 0.0f, 0.0f, 1.5f }, { 0.0f, 0.0f,0.0f });
 
 	CameraComponent* camera = new CameraComponent();
 	app->cameraComponent = camera;
