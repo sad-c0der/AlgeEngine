@@ -7,6 +7,7 @@ App::App() {
 App::~App() {
 	glDeleteProgram(shader);
 
+	delete animationSystem;
 	delete motionSystem;
 	delete cameraSystem;
 	delete renderSystem;
@@ -15,18 +16,21 @@ App::~App() {
 }
 
 void App::run() {
+	float lastTime = glfwGetTime();
 
 	while (!glfwWindowShouldClose(window)) {
+		float currentTime = glfwGetTime();
+		float dt = currentTime - lastTime;
+		lastTime = currentTime;
 
-		motionSystem->update(
-			transformComponents, physicsComponents, 16.67f / 1000.0f);
-		bool should_close = cameraSystem->update(
-			transformComponents, cameraID, *cameraComponent, 16.67f / 1000.0f);
+		motionSystem->update(transformComponents, physicsComponents, dt);
+		bool should_close = cameraSystem->update(transformComponents, cameraID, *cameraComponent, dt);
 		if (should_close) {
 			break;
 		}
+		animationSystem->update(animationComponents, dt * 1000.0f);
 
-		renderSystem->update(transformComponents, renderComponents);
+		renderSystem->update(transformComponents, renderComponents, animationComponents);
 	}
 }
 
@@ -75,6 +79,7 @@ void App::set_up_opengl() {
 }
 
 void App::make_systems() {
+	animationSystem = new AnimationSystem();
 	motionSystem = new MotionSystem();
 	cameraSystem = new CameraSystem(shader, window);
 	renderSystem = new RenderSystem(shader, window);

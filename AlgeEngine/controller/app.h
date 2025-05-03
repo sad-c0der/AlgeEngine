@@ -1,11 +1,13 @@
 #pragma once
 #include "../config.h"
 
+#include "../components/animation_component.h"
 #include "../components/camera_component.h"
 #include "../components/physics_component.h"
 #include "../components/render_component.h"
 #include "../components/transform_component.h"
 
+#include "../systems/animation_system.h"
 #include "../systems/camera_system.h"
 #include "../systems/motion_system.h"
 #include "../systems/render_system.h"
@@ -21,9 +23,9 @@ public:
     void make_systems();
 
     //Components
+    std::unordered_map<unsigned int, AnimationComponent> animationComponents;
     std::unordered_map<unsigned int, TransformComponent> transformComponents;
     std::unordered_map<unsigned int, PhysicsComponent> physicsComponents;
-	std::unordered_map<unsigned int, CameraComponent> cameraComponents;
     CameraComponent* cameraComponent;
     unsigned int cameraID;
     std::unordered_map<unsigned int, RenderComponent> renderComponents;
@@ -36,6 +38,7 @@ private:
     unsigned int shader;
 
     //Systems
+    AnimationSystem* animationSystem;
     MotionSystem* motionSystem;
     CameraSystem* cameraSystem;
     RenderSystem* renderSystem;

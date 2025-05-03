@@ -14,5 +14,17 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 std::vector<std::string> split(std::string line, std::string delimiter);
+
+enum class ObjectType {
+    eBox,
+    eGirl,
+    eRevy
+};
+
+enum class AnimationType {
+    eNone,
+    eRun,
+};

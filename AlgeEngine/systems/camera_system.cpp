@@ -33,9 +33,9 @@ bool CameraSystem::update(
     glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 
     // Movement parameters
-    const float acceleration = 2.0f; // How quickly the camera accelerates
+    const float acceleration = 10.0f; // How quickly the camera accelerates
     const float damping = 10.0f;       // How quickly the camera slows down
-	const float maxSpeed = 2.0f;      // Maximum speed of the camera
+	const float maxSpeed = 20.0f;      // Maximum speed of the camera
     static glm::vec3 velocity(0.0f);  // Current velocity of the camera
 
     // Keys
@@ -56,7 +56,7 @@ bool CameraSystem::update(
     // Normalize input direction
     if (glm::length(dPos) > 0.1f) {
         dPos = glm::normalize(dPos);
-        velocity += acceleration * dt * (dPos.x * forwards + dPos.y * right);
+        velocity += acceleration * (dt * 10.0f) * (dPos.x * forwards + dPos.y * right);
     }
 
     // Clamp velocity

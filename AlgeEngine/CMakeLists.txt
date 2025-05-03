@@ -17,7 +17,7 @@ add_executable(AlgeEngine
     systems/render_system.cpp systems/render_system.h
     view/shader.cpp view/shader.h
     factories/factory.cpp factories/factory.h
-)
+ "components/animation_component.h" "systems/animation_system.cpp" "systems/animation_system.h" "factories/mesh_factory.cpp" "factories/mesh_factory.h")
 
 # Set vcpkg path
 set(CMAKE_PREFIX_PATH "C:/Users/Algebra/source/repos/AlgeEngine/vcpkg_installed/x64-windows/share" ${CMAKE_PREFIX_PATH})
